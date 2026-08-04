@@ -220,20 +220,20 @@ namespace MondayMailJob
             sb.Append("<body style='margin:0;padding:0;background-color:#eef1f5;'>");
 
             sb.Append("<table role='presentation' width='100%' cellpadding='0' cellspacing='0' border='0' style='background-color:#eef1f5;'><tr><td align='center' style='padding:28px 12px;'>");
-            sb.Append("<!--[if mso]><table role='presentation' width='900' cellpadding='0' cellspacing='0' border='0'><tr><td><![endif]-->");
-            sb.Append("<table role='presentation' width='900' cellpadding='0' cellspacing='0' border='0' style='width:900px;max-width:900px;background-color:#ffffff;border:1px solid #dde1e7;'>");
+            sb.Append("<!--[if mso]><table role='presentation' width='860' cellpadding='0' cellspacing='0' border='0'><tr><td><![endif]-->");
+            sb.Append("<table role='presentation' width='860' cellpadding='0' cellspacing='0' border='0' style='width:860px;max-width:860px;background-color:#ffffff;border:1px solid #dde1e7;'>");
 
             sb.Append("<tr><td style='background-color:#3a6ea5;height:5px;line-height:5px;font-size:0;'>&nbsp;</td></tr>");
             sb.Append("<tr><td style='background-color:#1f3a5f;padding:22px 32px;'>");
             sb.Append("<span style='font-family:" + font + ";font-size:19px;font-weight:bold;color:#ffffff;letter-spacing:0.01em;'>Compliance Portal</span><br>");
-            sb.Append("<span style='font-family:" + font + ";font-size:12.5px;color:#c3d0e0;'>Weekly Compliance Snapshot &ndash; " + Enc(plantName) + "</span>");
+            sb.Append("<span style='font-family:" + font + ";font-size:12.5px;color:#c3d0e0;'>Weekly Compliance Schedule &ndash; " + Enc(today.ToString("dd MMM yyyy")) + "</span>");
             sb.Append("</td></tr>");
 
             sb.Append("<tr><td style='padding:26px 32px 6px;'>");
-            sb.Append("<p style='margin:0 0 12px;font-family:" + font + ";font-size:15px;color:#1c2430;'>Hello,</p>");
+            sb.Append("<p style='margin:0 0 12px;font-family:" + font + ";font-size:15px;color:#1c2430;'>Dear " + Enc(plantName) + " Team,</p>");
             sb.Append("<p style='margin:0 0 20px;font-family:" + font + ";font-size:13px;line-height:1.6;color:#3c4757;'>"
-                + "Here is the compliance snapshot for <b>" + Enc(plantName) + "</b> as of <b>" + today.ToString("dd MMM yyyy")
-                + "</b> &mdash; the owner-wise summary, followed by the full status detail. Please review and action anything overdue at the earliest.</p>");
+                + "Here is your compliance snapshot for <b>" + Enc(plantName) + "</b> as of <b>" + today.ToString("dd MMM yyyy")
+                + "</b> &mdash; the owner-wise summary, followed by the full status detail.</p>");
             sb.Append("</td></tr>");
 
             sb.Append("<tr><td style='padding:0 32px;'>");
