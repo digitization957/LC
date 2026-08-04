@@ -43,6 +43,34 @@ namespace MonthlyMailJob
             return rows.Count > 0 ? rows[0] : null;
         }
 
+        // Returns last insert id - used for mail_job_run so the run's id can be reused on every log row.
+        public static long Execute(string sql, params MySqlParameter[] args)
+        {
+            using (var conn = new MySqlConnection(ConnStr))
+            {
+                conn.Open();
+                using (var cmd = new MySqlCommand(sql, conn))
+                {
+                    if (args != null) cmd.Parameters.AddRange(args);
+                    cmd.ExecuteNonQuery();
+                    return cmd.LastInsertedId != 0 ? cmd.LastInsertedId : 0;
+                }
+            }
+        }
+
+        public static int ExecuteRows(string sql, params MySqlParameter[] args)
+        {
+            using (var conn = new MySqlConnection(ConnStr))
+            {
+                conn.Open();
+                using (var cmd = new MySqlCommand(sql, conn))
+                {
+                    if (args != null) cmd.Parameters.AddRange(args);
+                    return cmd.ExecuteNonQuery();
+                }
+            }
+        }
+
         public static MySqlParameter P(string name, object value)
         {
             return new MySqlParameter(name, value ?? DBNull.Value);

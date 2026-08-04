@@ -63,54 +63,35 @@ namespace MondayMailJob
             var today = DateTime.Today;
             Console.WriteLine("MondayMailJob starting for " + today.ToString("yyyy-MM-dd") + "...");
 
-            long runId = Db.Execute(
-                "INSERT INTO mail_job_run (job_name, run_for_date, started_at, status) VALUES ('MondayMailJob', @d, @s, 'running')",
-                Db.P("@d", today), Db.P("@s", DateTime.Now));
-
             int sent = 0, failed = 0, skipped = 0;
 
-            try
-            {
-                var plants = Db.Query("SELECT Plant_ID, Plant_Name FROM plant_master.tbl_plant ORDER BY Plant_Name");
+            var plants = Db.Query("SELECT Plant_ID, Plant_Name FROM plant_master.tbl_plant ORDER BY Plant_Name");
 
-                foreach (var plant in plants)
+            foreach (var plant in plants)
+            {
+                int plantId = Convert.ToInt32(plant["Plant_ID"]);
+                string plantName = (string)plant["Plant_Name"];
+
+                try
                 {
-                    int plantId = Convert.ToInt32(plant["Plant_ID"]);
-                    string plantName = (string)plant["Plant_Name"];
-
-                    try
-                    {
-                        var outcome = ProcessPlant(plantId, plantName, today, runId);
-                        if (outcome == "sent") sent++;
-                        else if (outcome == "failed") failed++;
-                        else skipped++;
-                    }
-                    catch (Exception ex)
-                    {
-                        failed++;
-                        LogSend(runId, plantId, "", "", "Compliance Schedule - " + plantName, "failed", null, ex.Message, null, null);
-                        Console.WriteLine("FAILED for plant " + plantName + ": " + ex.Message);
-                    }
+                    var outcome = ProcessPlant(plantId, plantName, today);
+                    if (outcome == "sent") sent++;
+                    else if (outcome == "failed") failed++;
+                    else skipped++;
                 }
-
-                Db.ExecuteRows(
-                    "UPDATE mail_job_run SET finished_at=@f, status='completed', total_sent=@s, total_failed=@fl, total_skipped=@sk WHERE run_id=@id",
-                    Db.P("@f", DateTime.Now), Db.P("@s", sent), Db.P("@fl", failed), Db.P("@sk", skipped), Db.P("@id", runId));
-            }
-            catch (Exception ex)
-            {
-                Db.ExecuteRows(
-                    "UPDATE mail_job_run SET finished_at=@f, status='crashed', total_sent=@s, total_failed=@fl, total_skipped=@sk, error_message=@e WHERE run_id=@id",
-                    Db.P("@f", DateTime.Now), Db.P("@s", sent), Db.P("@fl", failed), Db.P("@sk", skipped), Db.P("@e", ex.Message), Db.P("@id", runId));
-                Console.WriteLine("Job crashed: " + ex.Message);
-                return 1;
+                catch (Exception ex)
+                {
+                    failed++;
+                    LogSend(plantId, "", "", "Compliance Schedule - " + plantName, "failed", null, ex.Message, null, null);
+                    Console.WriteLine("FAILED for plant " + plantName + ": " + ex.Message);
+                }
             }
 
             Console.WriteLine("Done. sent=" + sent + ", failed=" + failed + ", skipped=" + skipped);
             return failed > 0 ? 1 : 0;
         }
 
-        private static string ProcessPlant(int plantId, string plantName, DateTime today, long runId)
+        private static string ProcessPlant(int plantId, string plantName, DateTime today)
         {
             var subject = "Compliance Schedule - " + plantName + " - Week of " + today.ToString("dd MMM yyyy");
 
@@ -127,7 +108,7 @@ namespace MondayMailJob
 
             if (toEmails.Count == 0)
             {
-                LogSend(runId, plantId, "", "", subject, "skipped", "no owners/reviewers for this plant", null, null, null);
+                LogSend(plantId, "", "", subject, "skipped", "no owners/reviewers for this plant", null, null, null);
                 return "skipped";
             }
 
@@ -145,7 +126,7 @@ namespace MondayMailJob
 
             if (complianceRows.Count == 0)
             {
-                LogSend(runId, plantId, string.Join(";", toEmails), "", subject, "skipped", "no active compliances for this plant", null, null, null);
+                LogSend(plantId, string.Join(";", toEmails), "", subject, "skipped", "no active compliances for this plant", null, null, null);
                 return "skipped";
             }
 
@@ -187,13 +168,13 @@ namespace MondayMailJob
             string error;
             if (Mailer.TrySend(toEmails, ccEmails, subject, body, out error))
             {
-                LogSend(runId, plantId, string.Join(";", toEmails), string.Join(";", ccEmails), subject, "sent", null, null, overdueCount, dueCount);
+                LogSend(plantId, string.Join(";", toEmails), string.Join(";", ccEmails), subject, "sent", null, null, overdueCount, dueCount);
                 Console.WriteLine("Sent for " + plantName + " (to=" + toEmails.Count + ", cc=" + ccEmails.Count + ") - overdue=" + overdueCount + ", due=" + dueCount);
                 return "sent";
             }
             else
             {
-                LogSend(runId, plantId, string.Join(";", toEmails), string.Join(";", ccEmails), subject, "failed", null, error, overdueCount, dueCount);
+                LogSend(plantId, string.Join(";", toEmails), string.Join(";", ccEmails), subject, "failed", null, error, overdueCount, dueCount);
                 Console.WriteLine("FAILED for " + plantName + ": " + error);
                 return "failed";
             }
@@ -213,13 +194,13 @@ namespace MondayMailJob
             return "compliant";
         }
 
-        private static void LogSend(long runId, int plantId, string toEmails, string ccEmails, string subject,
+        private static void LogSend(int plantId, string toEmails, string ccEmails, string subject,
             string status, string skipReason, string errorMessage, int? overdueCount, int? dueCount)
         {
             Db.Execute(
-                @"INSERT INTO mail_send_log (run_id, job_name, plant_id, to_emails, cc_emails, subject, status, skip_reason, error_message, overdue_count, due_count)
-                  VALUES (@r,'MondayMailJob',@p,@to,@cc,@sub,@st,@sr,@em,@oc,@dc)",
-                Db.P("@r", runId), Db.P("@p", plantId), Db.P("@to", toEmails ?? ""), Db.P("@cc", ccEmails ?? ""),
+                @"INSERT INTO mail_send_log (job_name, plant_id, to_emails, cc_emails, subject, status, skip_reason, error_message, overdue_count, due_count)
+                  VALUES ('MondayMailJob',@p,@to,@cc,@sub,@st,@sr,@em,@oc,@dc)",
+                Db.P("@p", plantId), Db.P("@to", toEmails ?? ""), Db.P("@cc", ccEmails ?? ""),
                 Db.P("@sub", subject), Db.P("@st", status), Db.P("@sr", skipReason), Db.P("@em", errorMessage),
                 Db.P("@oc", overdueCount), Db.P("@dc", dueCount));
         }

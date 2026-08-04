@@ -89,21 +89,43 @@ namespace MonthlyMailJob
                 var subject = "Compliance Schedule - " + firstOfMonth.ToString("MMMM yyyy");
                 var body = BuildBody(ownerName, firstOfMonth, overdue, dueThisMonth);
 
-                string error;
-                if (Mailer.TrySend(toEmail, ccEmails, subject, body, out error))
+                try
                 {
-                    sent++;
-                    Console.WriteLine("Sent to " + toEmail + " (cc: " + ccEmails.Count + ") - overdue=" + overdue.Count + ", due=" + dueThisMonth.Count);
+                    string error;
+                    if (Mailer.TrySend(toEmail, ccEmails, subject, body, out error))
+                    {
+                        sent++;
+                        LogSend(grp.Key, toEmail, string.Join(";", ccEmails), subject, "sent", null, overdue.Count, dueThisMonth.Count);
+                        Console.WriteLine("Sent to " + toEmail + " (cc: " + ccEmails.Count + ") - overdue=" + overdue.Count + ", due=" + dueThisMonth.Count);
+                    }
+                    else
+                    {
+                        failed++;
+                        LogSend(grp.Key, toEmail, string.Join(";", ccEmails), subject, "failed", error, overdue.Count, dueThisMonth.Count);
+                        Console.WriteLine("FAILED for " + toEmail + ": " + error);
+                    }
                 }
-                else
+                catch (Exception ex)
                 {
                     failed++;
-                    Console.WriteLine("FAILED for " + toEmail + ": " + error);
+                    LogSend(grp.Key, toEmail, string.Join(";", ccEmails), subject, "failed", ex.Message, overdue.Count, dueThisMonth.Count);
+                    Console.WriteLine("FAILED for " + toEmail + ": " + ex.Message);
                 }
             }
 
             Console.WriteLine("Done. sent=" + sent + ", failed=" + failed);
             return failed > 0 ? 1 : 0;
+        }
+
+        private static void LogSend(string ownerToken, string toEmail, string ccEmails, string subject,
+            string status, string errorMessage, int overdueCount, int dueCount)
+        {
+            Db.Execute(
+                @"INSERT INTO mail_send_log (job_name, owner_token, to_emails, cc_emails, subject, status, error_message, overdue_count, due_count)
+                  VALUES ('MonthlyMailJob',@ot,@to,@cc,@sub,@st,@em,@oc,@dc)",
+                Db.P("@ot", ownerToken), Db.P("@to", toEmail), Db.P("@cc", ccEmails ?? ""),
+                Db.P("@sub", subject), Db.P("@st", status), Db.P("@em", errorMessage),
+                Db.P("@oc", overdueCount), Db.P("@dc", dueCount));
         }
 
         // Table-based, all-inline-style markup on purpose - this has to render identically in the
