@@ -40,13 +40,19 @@ namespace MonthlyMailJob
             Console.WriteLine("MonthlyMailJob starting for " + firstOfMonth.ToString("yyyy-MM") + "...");
 
             var rows = Db.Query(
-                @"SELECT c.name, c.next_due_date, c.financial_year, c.owner_token, c.reviewer_token,
-                         pl.Plant_Name AS plant_name, a.name AS agency_name, ot.Name AS owner_name, rt.Name AS reviewer_name
+                @"SELECT c.name, c.next_due_date, c.financial_year, c.owner_token,
+                         pl.Plant_Name AS plant_name, a.name AS agency_name, ot.Name AS owner_name,
+                         CASE WHEN rallowed.Token IS NOT NULL AND rrole.Token IS NOT NULL THEN c.reviewer_token ELSE NULL END AS reviewer_token,
+                         CASE WHEN rallowed.Token IS NOT NULL AND rrole.Token IS NOT NULL THEN rt.Name ELSE NULL END AS reviewer_name
                   FROM compliances c
                   JOIN plant_master.tbl_plant pl ON pl.Plant_ID = c.plant_id
                   JOIN agencies a ON a.agency_id = c.agency_id
                   JOIN access.login_tokenpass ot ON ot.Token = c.owner_token
+                  JOIN access.login_tokenallowed oallowed ON oallowed.Token = ot.Token AND oallowed.LegalCompliance = 1
+                  JOIN access.role orole ON orole.Token = ot.Token AND LOWER(orole.LegalCompliance) = 'owner'
                   LEFT JOIN access.login_tokenpass rt ON rt.Token = c.reviewer_token
+                  LEFT JOIN access.login_tokenallowed rallowed ON rallowed.Token = rt.Token AND rallowed.LegalCompliance = 1
+                  LEFT JOIN access.role rrole ON rrole.Token = rt.Token AND LOWER(rrole.LegalCompliance) = 'reviewer'
                   WHERE c.is_active = 1 AND c.next_due_date <= @lastOfMonth
                   ORDER BY c.owner_token, c.next_due_date ASC",
                 Db.P("@lastOfMonth", lastOfMonth));
