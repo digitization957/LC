@@ -27,6 +27,11 @@
             <p>Choose who's Cc'd on each automated mail the system sends, per plant. Search by name or token, or add someone manually if they're not in the directory.</p>
         </div>
 
+        <div class="training-status new">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>
+            <span><b>To</b> is always the compliance's Owner and Reviewer — set automatically, not configurable here. Everything on this page only controls who's <b>Cc</b>'d.</span>
+        </div>
+
         <div class="plant-switch" id="plantSwitch"></div>
         <div class="mail-tabs" id="mailTabs"></div>
         <div class="tab-desc" id="mailTabDesc"></div>
