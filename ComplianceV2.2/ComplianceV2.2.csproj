@@ -160,6 +160,8 @@
     <Content Include="Reports.aspx" />
     <Content Include="ReportView.aspx" />
     <Content Include="Preview.aspx" />
+    <Content Include="MailConfig.aspx" />
+    <Content Include="Scripts\mailconfig.js" />
     <Content Include="Schedule.aspx" />
     <Content Include="Training.aspx" />
     <Content Include="ComplianceService.asmx" />
@@ -316,6 +318,13 @@
     </Compile>
     <Compile Include="Preview.aspx.designer.cs">
       <DependentUpon>Preview.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="MailConfig.aspx.cs">
+      <DependentUpon>MailConfig.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="MailConfig.aspx.designer.cs">
+      <DependentUpon>MailConfig.aspx</DependentUpon>
     </Compile>
     <Compile Include="Schedule.aspx.cs">
       <DependentUpon>Schedule.aspx</DependentUpon>
