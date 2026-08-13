@@ -432,8 +432,6 @@
     histLimit = v === "all" ? "all" : parseInt(v, 10);
     renderModal();
   });
-  $(document).on("click", ".overlay", function (e) { if ($(e.target).hasClass("overlay")) closeModal(); });
-  $(document).on("keydown", function (e) { if (e.key === "Escape" && modalId) closeModal(); });
 
   $(function () {
     if (!sessionId) { window.location.href = "Default.aspx"; return; }
