@@ -25,9 +25,9 @@ function ssHtml(id, optionsHtml, placeholder) {
 function syncSsel(id) {
   $("#" + id + "_q").val($("#" + id + " option:selected").text() || "");
 }
-function showSselList($input) {
+function showSselList($input, forceAll) {
   var id = $input.closest(".ssel").data("for");
-  var q = ($input.val() || "").trim().toLowerCase();
+  var q = forceAll ? "" : ($input.val() || "").trim().toLowerCase();
   var matches = $("#" + id + " option").filter(function () { return !q || $(this).text().toLowerCase().indexOf(q) !== -1; })
     .map(function () { return { value: $(this).val(), label: $(this).text() }; }).get();
   var $list = $("#" + id + "_list");
@@ -36,8 +36,10 @@ function showSselList($input) {
 }
 $(function () {
   // focusin/click (not focus) + delegated on document so it works across every page's dynamic markup.
-  $(document).on("focusin click", ".ssel-input", function () { showSselList($(this)); });
-  $(document).on("input", ".ssel-input", function () { showSselList($(this)); });
+  // Opening the list (focus/click) always shows every option, even if one is already selected;
+  // typing afterward filters it down.
+  $(document).on("focusin click", ".ssel-input", function () { showSselList($(this), true); });
+  $(document).on("input", ".ssel-input", function () { showSselList($(this), false); });
   // mousedown (not click) + preventDefault so the input never blurs before the selection registers.
   $(document).on("mousedown", ".ssel-list .combo-item", function (e) {
     e.preventDefault();

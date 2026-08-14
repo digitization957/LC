@@ -155,3 +155,4 @@ CREATE TABLE IF NOT EXISTS mail_config_log (
 - Reports page: modal now closes only via X/close button - removed outside-click (overlay) and Escape-key close handlers (reports.js)
 - Fixed: PDF preview showed "refused to connect" - X-Frame-Options was DENY, blocking the app's own same-origin preview iframe; changed to SAMEORIGIN
 - Fixed: MailConfig.aspx crashed with parser error "Could not load type" - the page/codebehind/designer files and mailconfig.js were never added to the .csproj, so the codebehind class never compiled into the assembly
+- Fixed searchable dropdowns app-wide: clicking one that already has a value now always shows the full option list (was filtering down to just the selected match); typing still filters as before
