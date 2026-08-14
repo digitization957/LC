@@ -54,6 +54,24 @@ $(function () {
     syncSsel(id);
     $("#" + id + "_list").attr("hidden", true).empty();
   });
+  // Keyboard navigation: Up/Down move a highlighted item, Enter picks it, Escape closes.
+  $(document).on("keydown", ".ssel-input", function (e) {
+    var $wrap = $(this).closest(".ssel");
+    var $list = $wrap.find(".ssel-list");
+    if (e.key === "Escape") { $list.attr("hidden", true).empty(); return; }
+    if (e.key !== "ArrowDown" && e.key !== "ArrowUp" && e.key !== "Enter") return;
+    if ($list.is(":hidden") || !$list.children().length) return;
+    e.preventDefault();
+    var $items = $list.children(".combo-item");
+    var $active = $items.filter(".is-active");
+    if (e.key === "Enter") {
+      if ($active.length) $active.trigger("mousedown");
+      return;
+    }
+    var idx = $active.length ? $items.index($active) : -1;
+    idx = e.key === "ArrowDown" ? Math.min(idx + 1, $items.length - 1) : Math.max(idx - 1, 0);
+    $items.removeClass("is-active").eq(idx).addClass("is-active")[0].scrollIntoView({ block: "nearest" });
+  });
 });
 
 /* Shared "kicked out" redirect: session expired/invalid, or explicit sign-out, always leaves
