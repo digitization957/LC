@@ -58,7 +58,7 @@
     if (!agencies.length) { $("#logoAgencyGrid").html('<div class="report-empty">No agencies in this plant yet.</div>'); return; }
     $("#logoAgencyGrid").html(agencies.map(function (a) {
       return '<div class="logo-card">' +
-        '<div class="logo-preview' + (a.hasLogo ? "" : " default") + '">' +
+        '<div class="logo-preview' + (a.hasLogo ? " has-logo" : " default") + '">' +
           (a.hasLogo ? '<img src="' + logoUrl(a.agencyId) + '" alt="' + esc(a.name) + ' logo" />' : icon("image", 26)) +
         "</div>" +
         '<div class="logo-card-body">' +

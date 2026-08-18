@@ -336,7 +336,7 @@
       var logo = a.hasLogo ? '<img src="AgencyLogo.ashx?sessionId=' + encodeURIComponent(state.session.sessionId) + '&agencyId=' + a.agencyId + '" alt="" />' : icon("folder", 20);
       return '<div class="entity-card' + (locked ? " locked" : "") + '" style="animation-delay:' + (Math.min(i, 5) * 40) + 'ms" ' +
         (locked ? "" : 'data-action="go-agency" data-id="' + a.agencyId + '"') + '>' +
-        '<div class="icon-chip">' + logo + "</div>" + "<h3>" + esc(a.name) + "</h3>" +
+        '<div class="icon-chip' + (a.hasLogo && !locked ? " has-logo" : "") + '">' + logo + "</div>" + "<h3>" + esc(a.name) + "</h3>" +
         '<div class="meta">' + esc(a.description || "") + "</div>" +
         (locked ? '<div class="locked-line" style="border-top:1px solid var(--color-rule);margin-top:14px;padding-top:12px">' + icon("lock", 13) + " Not assigned to you</div>" : '<div class="footer">' + statRow(a) + "</div>") +
         '<span class="chevron">' + icon("chevron", 18) + "</span>" + cardMenu + "</div>";
