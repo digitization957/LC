@@ -161,3 +161,4 @@ CREATE TABLE IF NOT EXISTS mail_config_log (
 - Added a proper red border (var(--color-accent)) around any agency's icon-chip/logo-preview once a custom logo is set, replacing the incidental red-tinted shadow that applied to every card regardless of logo; bumped app.css/app.js/agencylogoconfig.js cache-busters
 - Reverted the border: uploaded logos now render plain, no border/box-shadow/forced background — just the logo image as-is
 - Hovering an agency card that has a logo now shows that logo as a faint (10% opacity) watermark filling the card background; sits behind all text/icons via negative z-index within the card's own stacking context. Bumped app.css/app.js cache-busters
+- Slowed the watermark fade-in from 180ms to 500ms so it eases in smoothly instead of popping in abruptly; bumped app.css cache-buster
