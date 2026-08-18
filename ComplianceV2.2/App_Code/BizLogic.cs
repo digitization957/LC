@@ -40,6 +40,15 @@ namespace ComplianceV2._2.App_Code
             }
         }
 
+        // Single source of truth for "what's the next due date" - used by both MarkComplete (the actual
+        // save) and PreviewNextDue (the live UI preview), so the two can never silently disagree.
+        // Return is a fixed cycle anchored to the old due date; every other category rolls forward from
+        // whenever it's actually done. Caller still owns the AsAndWhen case (no computation - manual entry).
+        public static DateTime ComputeNextDue(string category, string freqUnit, int freqNum, DateTime currentDue, DateTime actionDate)
+        {
+            return category == "Return" ? AddInterval(currentDue, freqNum, freqUnit) : AddInterval(actionDate, freqNum, freqUnit);
+        }
+
         // Indian financial year (Apr-Mar), labeled by its ending year: Apr 2025-Mar 2026 = "F26".
         public static string FyOf(DateTime d)
         {

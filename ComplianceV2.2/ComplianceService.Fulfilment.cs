@@ -38,19 +38,16 @@ namespace ComplianceV2._2
                     throw new ArgumentException("Enter the next due date.");
                 nextDue = DateTime.Parse(manualNextDueDate);
             }
-            else if (category == "Return")
-            {
-                // Return has a fixed filing window: it can only be filed before the next cycle would
-                // start (old due date + frequency). Filing that late isn't allowed at all - unlike
-                // every other category, which is a rolling schedule based on when it's actually done.
-                var windowClose = BizLogic.AddInterval(currentDue, freqNum, freqUnit);
-                if (actionDate >= windowClose)
-                    throw new InvalidOperationException("The filing window for this Return closed on " + windowClose.AddDays(-1).ToString("dd-MM-yyyy") + ". It can no longer be marked complete for this cycle.");
-                nextDue = windowClose;
-            }
             else
             {
-                nextDue = BizLogic.AddInterval(actionDate, freqNum, freqUnit);
+                nextDue = BizLogic.ComputeNextDue(category, freqUnit, freqNum, currentDue, actionDate);
+                if (category == "Return" && actionDate >= nextDue)
+                {
+                    // Return has a fixed filing window: it can only be filed before the next cycle would
+                    // start (old due date + frequency). Filing that late isn't allowed at all - unlike
+                    // every other category, which is a rolling schedule based on when it's actually done.
+                    throw new InvalidOperationException("The filing window for this Return closed on " + nextDue.AddDays(-1).ToString("dd-MM-yyyy") + ". It can no longer be marked complete for this cycle.");
+                }
             }
             var fy = BizLogic.FyOf(nextDue);
             var status = BizLogic.ComputeStatus(nextDue, DateTime.Today);
@@ -87,6 +84,34 @@ namespace ComplianceV2._2
             }
 
             return new { nextDueDate = nextDue.ToString("yyyy-MM-dd"), mailSent };
+        }
+
+        // Read-only mirror of MarkComplete's date logic, for the live "Projected next due date" preview
+        // on the fulfilment form. Goes through the same BizLogic.ComputeNextDue as the actual save, so
+        // the preview and the real save can never drift apart.
+        [WebMethod]
+        public object PreviewNextDue(string sessionId, int complianceId, string completionDate)
+        {
+            var s = RequireSession(sessionId);
+
+            var c = Db.QuerySingle("SELECT owner_token, category, frequency_number, frequency_unit, next_due_date FROM compliances WHERE compliance_id=@id AND is_active=1", Db.P("@id", complianceId));
+            if (c == null) throw new ArgumentException("Compliance not found.");
+            if (s.Role != "owner" || (string)c["owner_token"] != s.Token)
+                throw new UnauthorizedAccessException("Not yours.");
+
+            var category = c["category"] as string;
+            var currentDue = (DateTime)c["next_due_date"];
+            int freqNum = Convert.ToInt32(c["frequency_number"]);
+            string freqUnit = (string)c["frequency_unit"];
+
+            if (freqUnit == BizLogic.AsAndWhenUnit)
+                return new { mode = "manual" };
+
+            var nextDue = BizLogic.ComputeNextDue(category, freqUnit, freqNum, currentDue, DateTime.Parse(completionDate));
+
+            if (category == "Return")
+                return new { mode = "return", nextDue = nextDue.ToString("yyyy-MM-dd"), lastFilableDate = nextDue.AddDays(-1).ToString("yyyy-MM-dd") };
+            return new { mode = "rolling", nextDue = nextDue.ToString("yyyy-MM-dd") };
         }
 
         private string BuildCompletionEmailHtml(string complianceName, DateTime actionDate, string ownerName, string remarks, DateTime nextDue, string reportUrl)

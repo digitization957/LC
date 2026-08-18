@@ -126,7 +126,22 @@
   function loadPlants() { api("GetPlants", { sessionId: state.session.sessionId }).then(function (d) { state.plants = d || []; render(); }); }
   function loadAgencies() { api("GetAgencies", { sessionId: state.session.sessionId, plantId: state.plantId }).then(function (d) { state.agencies = d || []; render(); }); }
   function loadCompliances() { api("GetCompliances", { sessionId: state.session.sessionId, plantId: state.plantId, agencyId: state.agencyId, fy: state.fy }).then(function (d) { state.compliances = d || []; render(); }); }
-  function loadDetail() { api("GetComplianceDetail", { sessionId: state.session.sessionId, complianceId: state.complianceId }).then(function (d) { state.detail = d; render(); }); }
+  function loadDetail() { api("GetComplianceDetail", { sessionId: state.session.sessionId, complianceId: state.complianceId }).then(attachPreview).then(function (d) { state.detail = d; render(); }); }
+
+  // Fetches the server-computed "next due date" preview (same BizLogic.ComputeNextDue the real save
+  // uses) and attaches it as d.preview, so the fulfilment form never computes this itself. Bypasses the
+  // shared api() helper on purpose - this is a cosmetic preview, so a failure here should never toast an
+  // error or sign the user out; it just silently falls back to no preview and the form still works.
+  function fetchPreview(complianceId, completionDate) {
+    return $.ajax({
+      url: API + "PreviewNextDue", type: "POST", contentType: "application/json; charset=utf-8",
+      data: JSON.stringify({ sessionId: state.session.sessionId, complianceId: complianceId, completionDate: completionDate }), dataType: "json"
+    }).then(function (res) { return res.d; }, function () { return null; });
+  }
+  function attachPreview(d) {
+    if (!d || !d.canFulfill || d.frequencyUnit === FREQ_ASANDWHEN) return $.when(d);
+    return fetchPreview(d.complianceId, isoDate(new Date())).then(function (p) { d.preview = p; return d; });
+  }
   function loadNotifications() { return api("GetNotifications", { sessionId: state.session.sessionId }).then(function (d) { state.notifications = d || []; }); }
 
   // ---------- Render root ----------
@@ -434,8 +449,8 @@
     var today = state.tempCompletionDate || isoDate(new Date());
     var isReturn = d.category === "Return";
     var isAsWhen = d.frequencyUnit === FREQ_ASANDWHEN;
-    var windowClose = isReturn ? addInterval(d.nextDueDate, d.frequencyNumber, d.frequencyUnit) : null;
-    var lastFilableDate = isReturn ? isoDate(new Date(windowClose.getTime() - 86400000)) : null;
+    var preview = d.preview || null;
+    var lastFilableDate = isReturn && preview ? preview.lastFilableDate : null;
 
     // Return has a hard cutoff - once "today" is past it, the cycle can no longer be filed at all,
     // no matter what completion date they'd pick. Show a blocking notice instead of the form.
@@ -467,13 +482,14 @@
         '<span class="fy-chip" id="manualNextDueFy">' + esc(fyOf(manualNextDue)) + '</span></div>' +
         '<div class="field-note">No fixed frequency for this category — set the next due date yourself.</div></div>';
     } else {
-      var projectedDue = isReturn ? windowClose : addInterval(today, d.frequencyNumber, d.frequencyUnit);
-      var projectedDueIso = isoDate(projectedDue);
-      nextDueField = '<div class="field"><label>Projected next due date</label><div class="date-fy-row"><div class="value" id="fulfillDuePreview">' + esc(fmtDate(projectedDueIso)) + '</div>' +
-        '<span class="fy-chip" id="fulfillDueFy">' + esc(fyOf(projectedDueIso)) + "</span></div></div>";
+      // preview comes from the server (PreviewNextDue → BizLogic.ComputeNextDue) - same source as the
+      // real save. Blank until it resolves is preferable to a client-computed guess that could disagree.
+      var projectedDueIso = preview ? preview.nextDue : "";
+      nextDueField = '<div class="field"><label>Projected next due date</label><div class="date-fy-row"><div class="value" id="fulfillDuePreview">' + esc(projectedDueIso ? fmtDate(projectedDueIso) : "—") + '</div>' +
+        '<span class="fy-chip" id="fulfillDueFy">' + esc(projectedDueIso ? fyOf(projectedDueIso) : "") + "</span></div></div>";
     }
     return '<div class="panel panel-form"><h3>' + icon("check", 16) + " Fulfillment form</h3>" +
-      '<div class="field"><label>Completion date</label><div class="date-fy-row"><input type="date" id="completionDate" value="' + today + '"' + (isReturn ? ' max="' + lastFilableDate + '"' : "") + ' />' +
+      '<div class="field"><label>Completion date</label><div class="date-fy-row"><input type="date" id="completionDate" value="' + today + '"' + (isReturn && lastFilableDate ? ' max="' + lastFilableDate + '"' : "") + ' />' +
       '<span class="fy-chip" id="completionFy">' + esc(fyOf(today)) + "</span></div>" + dateWindowNote + "</div>" +
       nextDueField +
       '<div class="field"><div class="field-label-row"><label>Remarks</label><span id="remarksCount" class="char-count">' + state.tempRemarks.length + '/' + REMARKS_MAX + '</span></div>' +
@@ -831,9 +847,12 @@
       // Return's next due date is anchored to the old due date, not the completion date - the preview never moves.
       // As and When has no computed preview at all - the owner types the next due date in directly.
       if (d && d.category !== "Return" && d.frequencyUnit !== FREQ_ASANDWHEN) {
-        var projectedIso = isoDate(addInterval(state.tempCompletionDate, d.frequencyNumber, d.frequencyUnit));
-        $("#fulfillDuePreview").text(fmtDate(projectedIso));
-        $("#fulfillDueFy").text(fyOf(projectedIso));
+        fetchPreview(d.complianceId, state.tempCompletionDate).then(function (p) {
+          if (!p || $("#completionDate").val() !== state.tempCompletionDate) return; // picker moved again meanwhile
+          d.preview = p;
+          $("#fulfillDuePreview").text(fmtDate(p.nextDue));
+          $("#fulfillDueFy").text(fyOf(p.nextDue));
+        });
       }
     });
     $("#app").off("change", "#manualNextDue").on("change", "#manualNextDue", function () {
@@ -883,7 +902,7 @@
       case "notif-goto":
         state.notifOpen = false;
         var cid = t.data("compliance");
-        api("GetComplianceDetail", { sessionId: state.session.sessionId, complianceId: cid }).then(function (d) {
+        api("GetComplianceDetail", { sessionId: state.session.sessionId, complianceId: cid }).then(attachPreview).then(function (d) {
           state.detail = d; state.complianceId = cid; state.plantId = null; state.agencyId = null; render();
         });
         break;
@@ -1150,7 +1169,7 @@
         sessionStorage.setItem("statum.session", JSON.stringify(state.session));
         if (deepLinkId) {
           var cid = parseInt(deepLinkId, 10);
-          api("GetComplianceDetail", { sessionId: state.session.sessionId, complianceId: cid }).then(function (d) {
+          api("GetComplianceDetail", { sessionId: state.session.sessionId, complianceId: cid }).then(attachPreview).then(function (d) {
             state.detail = d; state.complianceId = cid; state.plantId = null; state.agencyId = null;
             state.tempAttachments = []; state.tempRemarks = ""; state.tempCompletionDate = null; state.tempManualNextDue = null;
             state.fromSchedule = qs.get("from") === "schedule";
