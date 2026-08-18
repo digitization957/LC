@@ -149,8 +149,8 @@ button{font-family:inherit}
 .entity-card:hover{border-color:var(--color-accent); box-shadow:0 10px 24px oklch(45% 0.19 25 / .14), 0 2px 6px oklch(45% 0.19 25 / .08); transform:translateY(-2px); z-index:10}
 .entity-card.menu-open{z-index:20}
 .entity-card .icon-chip{width:38px; height:38px; border-radius:var(--radius-sm); background:var(--color-accent); color:var(--color-accent-ink); display:flex; align-items:center; justify-content:center; margin-bottom:10px; box-shadow:0 2px 5px oklch(45% 0.19 25 / .3); overflow:hidden}
-.entity-card .icon-chip.has-logo{background:var(--color-paper); box-shadow:none; border:1.5px solid var(--color-accent)}
-.entity-card .icon-chip img{width:100%; height:100%; object-fit:contain; background:var(--color-paper)}
+.entity-card .icon-chip.has-logo{background:transparent; box-shadow:none}
+.entity-card .icon-chip img{width:100%; height:100%; object-fit:contain}
 .entity-card h3{font-size:14.5px; color:var(--color-ink)}
 .entity-card .meta{font-size:12px; color:var(--color-ink-3); margin-top:3px}
 .entity-card .code{font-family:var(--font-mono); font-size:11px; color:var(--color-ink-3); margin-top:2px}
@@ -550,7 +550,7 @@ input:focus,select:focus,textarea:focus{outline:none; border-color:var(--color-a
 .logo-preview{width:64px; height:64px; border-radius:var(--radius-sm); background:var(--color-paper-2); border:1px solid var(--color-rule); display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden}
 .logo-preview img{width:100%; height:100%; object-fit:contain}
 .logo-preview.default{color:var(--color-ink-3)}
-.logo-preview.has-logo{background:var(--color-paper); border:1.5px solid var(--color-accent)}
+.logo-preview.has-logo{background:transparent; border:none}
 .logo-card-body{flex:1; min-width:0}
 .logo-card-body h3{font-size:14.5px; color:var(--color-ink)}
 .logo-card-body .meta{font-size:12px; color:var(--color-ink-3); margin-top:3px; overflow-wrap:anywhere}
