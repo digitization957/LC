@@ -432,7 +432,7 @@
   var REMARKS_MAX = 250;
   function fulfillFormHtml(d) {
     var today = state.tempCompletionDate || isoDate(new Date());
-    var isReturn ="";
+    var isReturn = d.category === "Return";
     var isAsWhen = d.frequencyUnit === FREQ_ASANDWHEN;
     var windowClose = isReturn ? addInterval(d.nextDueDate, d.frequencyNumber, d.frequencyUnit) : null;
     var lastFilableDate = isReturn ? isoDate(new Date(windowClose.getTime() - 86400000)) : null;
