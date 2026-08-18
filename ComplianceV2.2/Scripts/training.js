@@ -479,7 +479,6 @@
   $(window).on("resize", function () { if ($(".sop-overlay").length) positionRing(sopList[sopIdx].hl); });
 
   $(function () {
-    if (!sessionId) { window.location.href = "Default.aspx"; return; }
     api("ValidateSession", { sessionId: sessionId }).then(function (v) {
       role = v.role || "owner";
       return api("GetTrainingStatus", { sessionId: sessionId });

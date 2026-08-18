@@ -74,15 +74,14 @@
 
   function historyHtml(logs, complianceId) {
     if (!logs.length) return '<div class="report-empty">No fulfilment logged yet.</div>';
-    var sid = encodeURIComponent(sessionId);
     return logs.map(function (l) {
       var single = l.attachments.length === 1;
       var downloadUrl = single
-        ? DOWNLOAD_URL + "?sessionId=" + sid + "&complianceId=" + complianceId + "&file=" + encodeURIComponent(l.attachments[0].fileUrl)
-        : DOWNLOAD_ZIP_URL + "?sessionId=" + sid + "&logId=" + l.logId;
+        ? DOWNLOAD_URL + "?complianceId=" + complianceId + "&file=" + encodeURIComponent(l.attachments[0].fileUrl)
+        : DOWNLOAD_ZIP_URL + "?logId=" + l.logId;
       var filesLink = l.attachments.length ? filesChipHtml(l.logId,
         icon("clip", 15) + "Files (" + l.attachments.length + ")",
-        "Preview.aspx?sessionId=" + sid + "&logId=" + l.logId,
+        "Preview.aspx?logId=" + l.logId,
         downloadUrl, single ? "Download file" : "Download zip") : "";
       return '<div class="history-item"><div class="dot"></div><div class="hdate">' + esc(fmtDate(l.actionDate)) + '</div><div class="hbody">' + esc(l.remarks || "") +
         '<div class="hby">Logged by ' + esc(l.doneBy) + "</div>" + (filesLink ? "<div>" + filesLink + "</div>" : "") + "</div></div>";
@@ -434,7 +433,6 @@
   });
 
   $(function () {
-    if (!sessionId) { window.location.href = "Default.aspx"; return; }
     api("ValidateSession", { sessionId: sessionId }).then(function (v) {
       role = v.role;
       return api("GetPlants", { sessionId: sessionId });

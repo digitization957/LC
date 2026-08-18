@@ -76,6 +76,7 @@ namespace ComplianceV2._2
             if (person == null) throw new ArgumentException("Unknown token.");
 
             var sessionId = SessionStore.CreateSession(token, role);
+            SessionCookie.Set(System.Web.HttpContext.Current, sessionId);
             return new { sessionId, role, fullName = (string)person["Name"], plantName = (string)person["Plant_Name"], deptName = person["Dept_Name"] as string };
         }
 
@@ -128,6 +129,7 @@ namespace ComplianceV2._2
             if (person == null) return new { ok = false, reason = "invalid", complianceId = (int?)null };
 
             var sessionId = SessionStore.CreateSession(reviewerToken, "reviewer");
+            SessionCookie.Set(System.Web.HttpContext.Current, sessionId);
             Audit(reviewerToken, "REDEEM_REPORT_LINK", "compliance", complianceId, null);
             return new
             {

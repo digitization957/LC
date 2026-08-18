@@ -8,7 +8,7 @@ namespace ComplianceV2._2
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-            var sessionId = Request.QueryString["sessionId"];
+            var sessionId = SessionCookie.Resolve(Request);
             if (SessionStore.Validate(sessionId) == null) Response.Redirect("Default.aspx");
         }
     }

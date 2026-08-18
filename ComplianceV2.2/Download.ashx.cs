@@ -9,7 +9,7 @@ namespace ComplianceV2._2
     {
         public void ProcessRequest(HttpContext ctx)
         {
-            var sessionId = ctx.Request.QueryString["sessionId"];
+            var sessionId = SessionCookie.Resolve(ctx.Request);
             var fileToken = ctx.Request.QueryString["file"];
             if (!int.TryParse(ctx.Request.QueryString["complianceId"], out int complianceId))
             {

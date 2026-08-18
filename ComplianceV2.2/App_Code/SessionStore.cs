@@ -14,7 +14,7 @@ namespace ComplianceV2._2.App_Code
 
     public static class SessionStore
     {
-        private const int ExpiryMinutes = 30;
+        public const int ExpiryMinutes = 30;
 
         public static string CreateSession(string token, string role)
         {

@@ -43,7 +43,7 @@
   }
 
   function logoUrl(agencyId) {
-    return "AgencyLogo.ashx?sessionId=" + encodeURIComponent(sessionId) + "&agencyId=" + agencyId + "&t=" + Date.now();
+    return "AgencyLogo.ashx?agencyId=" + agencyId + "&t=" + Date.now();
   }
 
   /* ---------------- Render ---------------- */
@@ -124,10 +124,9 @@
   }
 
   $(function () {
-    if (!sessionId) { goToSso(); return; }
     api("ValidateSession", {}).then(function (v) {
       if (!v.valid) { goToSso(); return; }
-      if (v.role !== "master") { window.location.href = "Default.aspx?sessionId=" + encodeURIComponent(sessionId); return; }
+      if (v.role !== "master") { window.location.href = "Default.aspx"; return; }
       return api("GetPlants", {});
     }).then(function (list) {
       if (!list) return;

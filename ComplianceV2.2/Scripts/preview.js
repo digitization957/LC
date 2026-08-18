@@ -39,7 +39,7 @@
     return icon("file", 16);
   }
   function fileUrlFor(f, mode) {
-    return DOWNLOAD_URL + "?sessionId=" + encodeURIComponent(sessionId) + "&complianceId=" + complianceId +
+    return DOWNLOAD_URL + "?complianceId=" + complianceId +
       "&file=" + encodeURIComponent(f.fileUrl) + (mode ? "&mode=" + mode : "");
   }
 
@@ -81,7 +81,7 @@
     $("#previewSub").text("Fulfilment logged " + fmtDate(actionDate) + " · " + files.length + (files.length === 1 ? " file" : " files"));
     var downloadAllUrl = files.length === 1
       ? fileUrlFor(files[0])
-      : DOWNLOAD_ZIP_URL + "?sessionId=" + encodeURIComponent(sessionId) + "&logId=" + logId;
+      : DOWNLOAD_ZIP_URL + "?logId=" + logId;
     var downloadAllLabel = files.length === 1 ? "Download file" : "Download all (.zip)";
     $("#previewActions").html(files.length
       ? '<a class="btn btn-outline btn-sm" href="' + downloadAllUrl + '">' + icon("download", 14) + " " + downloadAllLabel + "</a>"
@@ -101,7 +101,7 @@
   });
 
   $(function () {
-    if (!sessionId || !logId) { window.location.href = "Default.aspx"; return; }
+    if (!logId) { window.location.href = "Default.aspx"; return; }
     $.ajax({
       url: API + "ValidateSession", type: "POST", contentType: "application/json; charset=utf-8",
       data: JSON.stringify({ sessionId: sessionId }), dataType: "json"

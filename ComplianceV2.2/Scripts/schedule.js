@@ -50,7 +50,7 @@
   }
 
   function itemRow(it, badgeCls, badgeText, srNo) {
-    var href = "Default.aspx?sessionId=" + encodeURIComponent(sessionId) + "&complianceId=" + it.complianceId + "&from=schedule";
+    var href = "Default.aspx?complianceId=" + it.complianceId + "&from=schedule";
     return '<a class="sched-card" href="' + href + '">' +
       '<div class="sched-card-head"><div class="sched-card-name"><span class="sched-srno">' + srNo + '.</span> ' + esc(it.name) + '</div>' +
       '<div class="pill ' + badgeCls + '"><span class="dot"></span>' + esc(badgeText) + "</div></div>" +
@@ -235,7 +235,6 @@
   });
 
   $(function () {
-    if (!sessionId) { window.location.href = "Default.aspx"; return; }
     api("ValidateSession", { sessionId: sessionId }).then(function () {
       return api("GetMySchedule", { sessionId: sessionId });
     }).then(function (list) {

@@ -11,7 +11,7 @@ namespace ComplianceV2._2
     {
         public void ProcessRequest(HttpContext ctx)
         {
-            var sessionId = ctx.Request.QueryString["sessionId"];
+            var sessionId = SessionCookie.Resolve(ctx.Request);
             var session = SessionStore.Validate(sessionId);
             if (session == null) { ctx.Response.StatusCode = 401; return; }
 

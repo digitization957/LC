@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Web;
 using System.Web.Script.Services;
 using System.Web.Services;
 using ComplianceV2._2.App_Code;
@@ -14,9 +15,12 @@ namespace ComplianceV2._2
     [ScriptService]
     public partial class ComplianceService : System.Web.Services.WebService
     {
+        // sessionId normally arrives in the POST body (never logged in a URL). Falls back to the
+        // HttpOnly cookie so callers that stop sending it explicitly keep working unchanged.
         private SessionInfo RequireSession(string sessionId)
         {
-            var s = SessionStore.Validate(sessionId);
+            var resolved = string.IsNullOrEmpty(sessionId) ? SessionCookie.Resolve(HttpContext.Current.Request) : sessionId;
+            var s = SessionStore.Validate(resolved);
             if (s == null) throw new UnauthorizedAccessException("Session expired or invalid. Please sign in again.");
             return s;
         }

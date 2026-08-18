@@ -19,6 +19,6 @@
     </div>
     <script src="Scripts/jquery-3.7.0.min.js"></script>
     <script src="Scripts/common.js?v=6"></script>
-    <script src="Scripts/preview.js?v=2"></script>
+    <script src="Scripts/preview.js?v=3"></script>
 </body>
 </html>

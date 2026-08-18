@@ -65,7 +65,7 @@
   }
 
   function itemRow(it, badgeCls, badgeText) {
-    var href = "Default.aspx?sessionId=" + encodeURIComponent(sessionId) + "&complianceId=" + it.complianceId;
+    var href = "Default.aspx?complianceId=" + it.complianceId;
     return '<a class="report-item" href="' + href + '" style="text-decoration:none;color:inherit">' +
       '<div class="report-item-main"><div class="report-item-name">' + esc(it.name) + '</div>' +
       '<div class="report-item-meta">' + esc(it.plantName) + " · " + esc(it.agencyName) + " · Owner: " + esc(it.ownerName) + "</div></div>" +
@@ -287,7 +287,6 @@
   });
 
   $(function () {
-    if (!sessionId) { window.location.href = "Default.aspx"; return; }
     api("ValidateSession", { sessionId: sessionId }).then(function (v) {
       role = v.role;
       return api("GetPlants", { sessionId: sessionId });

@@ -105,7 +105,7 @@
     if (state.session.role === "master" || state.session.role === "owner") loadNotifications().then(render);
   }
   function backToSchedule() {
-    window.location.href = "Schedule.aspx?sessionId=" + encodeURIComponent(state.session.sessionId);
+    window.location.href = "Schedule.aspx";
   }
   function goPlant(id) {
     if (state.plantId === id) return;
@@ -243,7 +243,7 @@
     var actions = "";
     actions += '<div class="reports-wrap"><button class="btn btn-nav btn-sm" data-action="toggle-reports-menu">' + icon("clip", 14) + " Reports</button></div>";
     if (role === "owner") {
-      actions += '<a class="btn btn-nav btn-sm" href="Schedule.aspx?sessionId=' + encodeURIComponent(state.session.sessionId) + '">' + icon("calendar", 14) + " Schedule</a>";
+      actions += '<a class="btn btn-nav btn-sm" href="Schedule.aspx">' + icon("calendar", 14) + " Schedule</a>";
     }
     if (role === "master") {
       actions += '<div class="create-wrap"><button class="btn btn-nav btn-sm" data-action="toggle-create-menu">' + icon("plus", 14) + " Create</button></div>";
@@ -333,7 +333,7 @@
       var cardMenu = role === "master" && !locked ? '<div class="card-menu-wrap">' +
         '<button type="button" class="card-menu-btn" data-action="toggle-agency-menu" data-id="' + a.agencyId + '">' + icon("dots", 16) + "</button>" +
         "</div>" : "";
-      var logoUrl = "AgencyLogo.ashx?sessionId=" + encodeURIComponent(state.session.sessionId) + "&agencyId=" + a.agencyId;
+      var logoUrl = "AgencyLogo.ashx?agencyId=" + a.agencyId;
       var logo = a.hasLogo ? '<img src="' + logoUrl + '" alt="" />' : icon("folder", 20);
       var logoBg = a.hasLogo && !locked ? '<div class="card-logo-bg" style="background-image:url(\'' + logoUrl + '\')"></div>' : "";
       return '<div class="entity-card' + (locked ? " locked" : "") + '" style="animation-delay:' + (Math.min(i, 5) * 40) + 'ms" ' +
@@ -413,14 +413,13 @@
     if (!d.logs.length) return '<div class="panel panel-history"><h3>' + icon("clip", 16) + " Fulfillment history</h3>" +
       '<div class="empty-state" style="border:none;padding:24px 0">' + iconChip("clock") + "<h3>No fulfillment logged yet</h3><p>Once the owner completes this compliance, the log will appear here.</p></div></div>";
     var items = d.logs.map(function (l) {
-      var sid = encodeURIComponent(state.session.sessionId);
       var single = l.attachments.length === 1;
       var downloadUrl = single
-        ? DOWNLOAD_URL + "?sessionId=" + sid + "&complianceId=" + d.complianceId + "&file=" + encodeURIComponent(l.attachments[0].fileUrl)
-        : DOWNLOAD_ZIP_URL + "?sessionId=" + sid + "&logId=" + l.logId;
+        ? DOWNLOAD_URL + "?complianceId=" + d.complianceId + "&file=" + encodeURIComponent(l.attachments[0].fileUrl)
+        : DOWNLOAD_ZIP_URL + "?logId=" + l.logId;
       var filesLink = l.attachments.length ? filesChipHtml(l.logId,
         icon("clip", 12) + "Files (" + l.attachments.length + ")",
-        "Preview.aspx?sessionId=" + sid + "&logId=" + l.logId,
+        "Preview.aspx?logId=" + l.logId,
         downloadUrl, single ? "Download file" : "Download zip") : "";
       var revertBtn = l.canRevert ? '<button type="button" class="btn btn-outline btn-sm" data-action="open-revert" data-log="' + l.logId + '">Revert this fulfilment</button>' : "";
       var actionRow = (filesLink || revertBtn) ? '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:8px">' + (filesLink || "<span></span>") + revertBtn + "</div>" : "";
@@ -539,19 +538,17 @@
 
   // ---------- Reports menu ----------
   function reportsMenuHtml() {
-    var sid = encodeURIComponent(state.session.sessionId);
     return '<div class="create-menu">' +
-      '<a class="create-menu-item" href="Report.aspx?sessionId=' + sid + '">' + icon("building", 15) + " Overview</a>" +
-      '<a class="create-menu-item" href="Reports.aspx?sessionId=' + sid + '">' + icon("clip", 15) + " Reports</a>" +
+      '<a class="create-menu-item" href="Report.aspx">' + icon("building", 15) + " Overview</a>" +
+      '<a class="create-menu-item" href="Reports.aspx">' + icon("clip", 15) + " Reports</a>" +
       "</div>";
   }
 
   // ---------- Config menu (master-only) ----------
   function configMenuHtml() {
-    var sid = encodeURIComponent(state.session.sessionId);
     return '<div class="create-menu">' +
-      '<a class="create-menu-item" href="MailConfig.aspx?sessionId=' + sid + '">' + icon("mail", 15) + " Mail config</a>" +
-      '<a class="create-menu-item" href="AgencyLogoConfig.aspx?sessionId=' + sid + '">' + icon("folder", 15) + " Agency logo config</a>" +
+      '<a class="create-menu-item" href="MailConfig.aspx">' + icon("mail", 15) + " Mail config</a>" +
+      '<a class="create-menu-item" href="AgencyLogoConfig.aspx">' + icon("folder", 15) + " Agency logo config</a>" +
       "</div>";
   }
 
@@ -874,7 +871,7 @@
       case "go-agency": goAgency(id); break;
       case "go-compliance": goCompliance(id); break;
       case "sign-out": signOut(); break;
-      case "go-training": window.location.href = "Training.aspx?sessionId=" + encodeURIComponent(state.session.sessionId); break;
+      case "go-training": window.location.href = "Training.aspx"; break;
       case "toggle-user-menu":
         state.userMenuOpen = !state.userMenuOpen;
         render();
@@ -1135,7 +1132,7 @@
       n--;
       if (n <= 0) {
         clearInterval(timer);
-        window.location.href = "Schedule.aspx?sessionId=" + encodeURIComponent(state.session.sessionId);
+        window.location.href = "Schedule.aspx";
         return;
       }
       el.find("#redirectMsg").text("Compliance marked complete — next due date recalculated to " + fmtDate(nextDueDate) + ". Taking you back to Schedule in " + n + "...");

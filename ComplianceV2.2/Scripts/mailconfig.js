@@ -284,10 +284,9 @@
   /* ---------------- Boot ---------------- */
 
   $(function () {
-    if (!sessionId) { goToSso(); return; }
     api("ValidateSession", {}).then(function (v) {
       if (!v.valid) { goToSso(); return; }
-      if (v.role !== "master") { window.location.href = "Default.aspx?sessionId=" + encodeURIComponent(sessionId); return; }
+      if (v.role !== "master") { window.location.href = "Default.aspx"; return; }
       return api("GetPlants", {});
     }).then(function (list) {
       if (!list) return;

@@ -34,6 +34,6 @@
     <script src="Scripts/jspdf.umd.min.js"></script>
     <script src="Scripts/jspdf.plugin.autotable.min.js"></script>
     <script src="Scripts/common.js?v=6"></script>
-    <script src="Scripts/report.js?v=10"></script>
+    <script src="Scripts/report.js?v=11"></script>
 </body>
 </html>

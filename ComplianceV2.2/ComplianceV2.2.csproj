@@ -238,6 +238,7 @@
   <ItemGroup>
     <Compile Include="App_Code\Db.cs" />
     <Compile Include="App_Code\SessionStore.cs" />
+    <Compile Include="App_Code\SessionCookie.cs" />
     <Compile Include="App_Code\BizLogic.cs" />
     <Compile Include="App_Code\Dto.cs" />
     <Compile Include="App_Code\Json.cs" />
