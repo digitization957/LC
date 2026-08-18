@@ -216,9 +216,9 @@
   }
 
   function showError(xhr) {
-    if (xhr.status === 401) { goToSso(); return; }
     var msg = "Could not load the schedule.";
     try { msg = JSON.parse(xhr.responseText).Message || msg; } catch (e) { }
+    if (xhr.status === 401 || /session/i.test(msg)) { goToSso(); return; }
     $("#scheduleBody").html('<div class="empty-state"><div class="icon-chip" style="margin:0 auto 14px">' + icon("alert", 22) + "</div><h3>" + esc(msg) + "</h3></div>");
   }
 

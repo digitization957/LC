@@ -395,9 +395,9 @@
   }
 
   function showError(xhr) {
-    if (xhr.status === 401) { goToSso(); return; }
     var msg = "Could not load the report.";
     try { msg = JSON.parse(xhr.responseText).Message || msg; } catch (e) { }
+    if (xhr.status === 401 || /session/i.test(msg)) { goToSso(); return; }
     toast(msg, true);
   }
 
