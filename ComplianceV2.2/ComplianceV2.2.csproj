@@ -168,6 +168,10 @@
     <Content Include="Upload.ashx" />
     <Content Include="Download.ashx" />
     <Content Include="DownloadZip.ashx" />
+    <Content Include="AgencyLogo.ashx" />
+    <Content Include="AgencyLogoUpload.ashx" />
+    <Content Include="AgencyLogoConfig.aspx" />
+    <Content Include="Scripts\agencylogoconfig.js" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Scripts\bootstrap.bundle.js" />
@@ -250,6 +254,9 @@
     <Compile Include="ComplianceService.Lookups.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="ComplianceService.AgencyLogo.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="ComplianceService.Compliances.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -264,6 +271,12 @@
     </Compile>
     <Compile Include="Download.ashx.cs">
       <DependentUpon>Download.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="AgencyLogo.ashx.cs">
+      <DependentUpon>AgencyLogo.ashx</DependentUpon>
+    </Compile>
+    <Compile Include="AgencyLogoUpload.ashx.cs">
+      <DependentUpon>AgencyLogoUpload.ashx</DependentUpon>
     </Compile>
     <Compile Include="DownloadZip.ashx.cs">
       <DependentUpon>DownloadZip.ashx</DependentUpon>
@@ -325,6 +338,13 @@
     </Compile>
     <Compile Include="MailConfig.aspx.designer.cs">
       <DependentUpon>MailConfig.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="AgencyLogoConfig.aspx.cs">
+      <DependentUpon>AgencyLogoConfig.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="AgencyLogoConfig.aspx.designer.cs">
+      <DependentUpon>AgencyLogoConfig.aspx</DependentUpon>
     </Compile>
     <Compile Include="Schedule.aspx.cs">
       <DependentUpon>Schedule.aspx</DependentUpon>

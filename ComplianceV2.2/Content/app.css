@@ -27,6 +27,7 @@ button{font-family:inherit}
 .nav-actions{display:flex; align-items:center; gap:8px}
 .create-wrap{position:relative}
 .reports-wrap{position:relative}
+.config-wrap{position:relative}
 .create-menu{position:absolute; top:calc(100% + 10px); right:0; width:190px; background:var(--color-paper); border-radius:var(--radius-md); box-shadow:var(--shadow-lg); z-index:90; border:1px solid var(--color-rule); overflow:hidden; padding:6px}
 .create-menu-item{display:flex; align-items:center; gap:9px; padding:9px 10px; font-size:13px; font-weight:600; color:var(--color-ink-2); border-radius:var(--radius-sm); cursor:pointer; text-decoration:none; transition:background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out)}
 .create-menu-item:hover{background:var(--color-danger); color:#fff}
@@ -147,7 +148,8 @@ button{font-family:inherit}
 .entity-card{background:var(--color-paper); border:1px solid var(--color-rule); border-radius:var(--radius-md); padding:16px; position:relative; cursor:pointer; z-index:1; transition:border-color var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out)}
 .entity-card:hover{border-color:var(--color-accent); box-shadow:0 10px 24px oklch(45% 0.19 25 / .14), 0 2px 6px oklch(45% 0.19 25 / .08); transform:translateY(-2px); z-index:10}
 .entity-card.menu-open{z-index:20}
-.entity-card .icon-chip{width:38px; height:38px; border-radius:var(--radius-sm); background:var(--color-accent); color:var(--color-accent-ink); display:flex; align-items:center; justify-content:center; margin-bottom:10px; box-shadow:0 2px 5px oklch(45% 0.19 25 / .3)}
+.entity-card .icon-chip{width:38px; height:38px; border-radius:var(--radius-sm); background:var(--color-accent); color:var(--color-accent-ink); display:flex; align-items:center; justify-content:center; margin-bottom:10px; box-shadow:0 2px 5px oklch(45% 0.19 25 / .3); overflow:hidden}
+.entity-card .icon-chip img{width:100%; height:100%; object-fit:contain; background:var(--color-paper)}
 .entity-card h3{font-size:14.5px; color:var(--color-ink)}
 .entity-card .meta{font-size:12px; color:var(--color-ink-3); margin-top:3px}
 .entity-card .code{font-family:var(--font-mono); font-size:11px; color:var(--color-ink-3); margin-top:2px}
@@ -540,3 +542,16 @@ input:focus,select:focus,textarea:focus{outline:none; border-color:var(--color-a
 .mail-log-row .act.remove{color:var(--color-danger)}
 .mail-log-row .who{color:var(--color-ink-3); font-family:var(--font-mono); font-size:11px}
 .mail-log-empty{padding:16px; text-align:center; font-size:12.5px; color:var(--color-ink-3)}
+
+/* ---------------- Agency logo config ---------------- */
+.logo-agency-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:14px}
+.logo-card{background:var(--color-paper); border:1px solid var(--color-rule); border-radius:var(--radius-md); padding:16px; display:flex; gap:14px; align-items:flex-start}
+.logo-preview{width:64px; height:64px; border-radius:var(--radius-sm); background:var(--color-paper-2); border:1px solid var(--color-rule); display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden}
+.logo-preview img{width:100%; height:100%; object-fit:contain}
+.logo-preview.default{color:var(--color-ink-3)}
+.logo-card-body{flex:1; min-width:0}
+.logo-card-body h3{font-size:14.5px; color:var(--color-ink)}
+.logo-card-body .meta{font-size:12px; color:var(--color-ink-3); margin-top:3px; overflow-wrap:anywhere}
+.logo-card-actions{display:flex; flex-wrap:wrap; gap:8px; margin-top:12px}
+.btn-danger-outline{background:var(--color-paper); color:var(--color-danger); border-color:var(--color-danger)}
+.btn-danger-outline:hover{background:var(--color-danger-soft)}

@@ -100,7 +100,10 @@ namespace ComplianceV2._2
             var s = RequireSession(sessionId);
             var today = DateTime.Today;
 
-            var agencies = Db.Query("SELECT agency_id, name, description FROM agencies WHERE plant_id=@p AND is_active=1 ORDER BY name", Db.P("@p", plantId));
+            var agencies = Db.Query(
+                @"SELECT a.agency_id, a.name, a.description, (l.agency_id IS NOT NULL) AS has_logo
+                  FROM agencies a LEFT JOIN agency_logos l ON l.agency_id = a.agency_id
+                  WHERE a.plant_id=@p AND a.is_active=1 ORDER BY a.name", Db.P("@p", plantId));
             var compliances = Db.Query("SELECT agency_id, owner_token, reviewer_token, next_due_date FROM compliances WHERE plant_id=@p AND is_active=1", Db.P("@p", plantId));
             var scopedAgencyIds = s.Role == "master" ? null : new HashSet<int>(
                 compliances.Where(c => (s.Role == "owner" ? (string)c["owner_token"] : (c["reviewer_token"] as string)) == s.Token)
@@ -115,7 +118,8 @@ namespace ComplianceV2._2
                     agencyId = agencyId,
                     name = (string)a["name"],
                     description = a["description"] as string,
-                    accessible = s.Role == "master" || (scopedAgencyIds != null && scopedAgencyIds.Contains(agencyId))
+                    accessible = s.Role == "master" || (scopedAgencyIds != null && scopedAgencyIds.Contains(agencyId)),
+                    hasLogo = Convert.ToBoolean(a["has_logo"])
                 };
                 foreach (var c in compliances.Where(c => Convert.ToInt32(c["agency_id"]) == agencyId))
                 {

@@ -142,6 +142,7 @@
     if (state.userMenuOpen) $(".user-wrap").append(userMenuHtml(role));
     if (state.createMenuOpen) $(".create-wrap").append(createMenuHtml());
     if (state.reportsMenuOpen) $(".reports-wrap").append(reportsMenuHtml());
+    if (state.configMenuOpen) $(".config-wrap").append(configMenuHtml());
     if (state.agencyMenuOpenId) {
       var $btn = $(".card-menu-btn[data-id='" + state.agencyMenuOpenId + "']");
       if ($btn.length) {
@@ -246,7 +247,7 @@
     }
     if (role === "master") {
       actions += '<div class="create-wrap"><button class="btn btn-nav btn-sm" data-action="toggle-create-menu">' + icon("plus", 14) + " Create</button></div>";
-      actions += '<a class="btn btn-nav btn-sm" href="MailConfig.aspx?sessionId=' + encodeURIComponent(state.session.sessionId) + '">' + icon("mail", 14) + " Mail config</a>";
+      actions += '<div class="config-wrap"><button class="btn btn-nav btn-sm" data-action="toggle-config-menu">' + icon("mail", 14) + " Config</button></div>";
     }
     if (role === "master" || role === "owner") {
       var unread = state.notifications.length;
@@ -332,9 +333,10 @@
       var cardMenu = role === "master" && !locked ? '<div class="card-menu-wrap">' +
         '<button type="button" class="card-menu-btn" data-action="toggle-agency-menu" data-id="' + a.agencyId + '">' + icon("dots", 16) + "</button>" +
         "</div>" : "";
+      var logo = a.hasLogo ? '<img src="AgencyLogo.ashx?sessionId=' + encodeURIComponent(state.session.sessionId) + '&agencyId=' + a.agencyId + '" alt="" />' : icon("folder", 20);
       return '<div class="entity-card' + (locked ? " locked" : "") + '" style="animation-delay:' + (Math.min(i, 5) * 40) + 'ms" ' +
         (locked ? "" : 'data-action="go-agency" data-id="' + a.agencyId + '"') + '>' +
-        '<div class="icon-chip">' + icon("folder", 20) + "</div>" + "<h3>" + esc(a.name) + "</h3>" +
+        '<div class="icon-chip">' + logo + "</div>" + "<h3>" + esc(a.name) + "</h3>" +
         '<div class="meta">' + esc(a.description || "") + "</div>" +
         (locked ? '<div class="locked-line" style="border-top:1px solid var(--color-rule);margin-top:14px;padding-top:12px">' + icon("lock", 13) + " Not assigned to you</div>" : '<div class="footer">' + statRow(a) + "</div>") +
         '<span class="chevron">' + icon("chevron", 18) + "</span>" + cardMenu + "</div>";
@@ -538,6 +540,15 @@
     return '<div class="create-menu">' +
       '<a class="create-menu-item" href="Report.aspx?sessionId=' + sid + '">' + icon("building", 15) + " Overview</a>" +
       '<a class="create-menu-item" href="Reports.aspx?sessionId=' + sid + '">' + icon("clip", 15) + " Reports</a>" +
+      "</div>";
+  }
+
+  // ---------- Config menu (master-only) ----------
+  function configMenuHtml() {
+    var sid = encodeURIComponent(state.session.sessionId);
+    return '<div class="create-menu">' +
+      '<a class="create-menu-item" href="MailConfig.aspx?sessionId=' + sid + '">' + icon("mail", 15) + " Mail config</a>" +
+      '<a class="create-menu-item" href="AgencyLogoConfig.aspx?sessionId=' + sid + '">' + icon("folder", 15) + " Agency logo config</a>" +
       "</div>";
   }
 
@@ -838,6 +849,7 @@
       if (state.userMenuOpen && !$(e.target).closest(".user-menu,.user-wrap").length) { state.userMenuOpen = false; render(); }
       if (state.createMenuOpen && !$(e.target).closest(".create-menu,.create-wrap").length) { state.createMenuOpen = false; render(); }
       if (state.reportsMenuOpen && !$(e.target).closest(".reports-wrap").length) { state.reportsMenuOpen = false; render(); }
+      if (state.configMenuOpen && !$(e.target).closest(".config-wrap").length) { state.configMenuOpen = false; render(); }
       if (state.agencyMenuOpenId && !$(e.target).closest(".card-menu-wrap,.card-menu-fixed").length) { state.agencyMenuOpenId = null; render(); }
       if (state.complianceMenuOpenId && !$(e.target).closest(".row-menu-wrap,.card-menu-fixed").length) { state.complianceMenuOpenId = null; render(); }
     });
@@ -881,6 +893,10 @@
         break;
       case "toggle-reports-menu":
         state.reportsMenuOpen = !state.reportsMenuOpen;
+        render();
+        break;
+      case "toggle-config-menu":
+        state.configMenuOpen = !state.configMenuOpen;
         render();
         break;
       case "open-agency-modal":

@@ -24,6 +24,7 @@ namespace ComplianceV2._2.App_Code
         public int overdue { get; set; }
         public int due { get; set; }
         public int compliant { get; set; }
+        public bool hasLogo { get; set; }
     }
 
     public class ComplianceRowDto
