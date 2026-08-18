@@ -244,6 +244,7 @@
     <Compile Include="App_Code\Json.cs" />
     <Compile Include="App_Code\Mailer.cs" />
     <Compile Include="App_Code\FileCrypto.cs" />
+    <Compile Include="App_Code\MalwareScanner.cs" />
     <Compile Include="App_Code\ReportLinkToken.cs" />
     <Compile Include="ComplianceService.asmx.cs">
       <DependentUpon>ComplianceService.asmx</DependentUpon>

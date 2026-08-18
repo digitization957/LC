@@ -33,15 +33,40 @@ namespace ComplianceV2._2
                 var ext = DetectSafeExtension(file);
                 if (ext == null) throw new ArgumentException("Only PDF, JPG, PNG, DOC or DOCX files are allowed.");
 
-                var uploadsDir = ctx.Server.MapPath("~/App_Data/Uploads");
-                if (!Directory.Exists(uploadsDir)) Directory.CreateDirectory(uploadsDir);
+                var scanDir = ctx.Server.MapPath("~/App_Data/UploadScanTmp");
+                if (!Directory.Exists(scanDir)) Directory.CreateDirectory(scanDir);
+                var scanPath = Path.Combine(scanDir, Guid.NewGuid().ToString("N") + ext);
 
-                var storedName = Guid.NewGuid().ToString("N") + ext;
-                var fullPath = Path.Combine(uploadsDir, storedName);
-                FileCrypto.EncryptToFile(file.InputStream, fullPath);
+                try
+                {
+                    // Scan a real plaintext copy - magic-byte checks only confirm file type, not safety.
+                    file.InputStream.Position = 0;
+                    using (var tmp = new FileStream(scanPath, FileMode.Create, FileAccess.Write))
+                        file.InputStream.CopyTo(tmp);
 
-                var originalName = Path.GetFileName(file.FileName);
-                ctx.Response.Write(Json.Ok(new { fileName = originalName, fileUrl = storedName }));
+                    if (MalwareScanner.IsInfected(scanPath, out string scanDetail))
+                    {
+                        Db.Execute("INSERT INTO audit_log (user_id, action, entity_type, entity_id, details) VALUES (@u,@a,@t,@e,@d)",
+                            Db.P("@u", session.Token), Db.P("@a", "UPLOAD_BLOCKED_MALWARE"), Db.P("@t", "compliance"), Db.P("@e", complianceId),
+                            Db.P("@d", scanDetail ?? (object)DBNull.Value));
+                        throw new ArgumentException("This file was flagged by antivirus scanning and cannot be uploaded.");
+                    }
+
+                    var uploadsDir = ctx.Server.MapPath("~/App_Data/Uploads");
+                    if (!Directory.Exists(uploadsDir)) Directory.CreateDirectory(uploadsDir);
+
+                    var storedName = Guid.NewGuid().ToString("N") + ext;
+                    var fullPath = Path.Combine(uploadsDir, storedName);
+                    using (var tmp = new FileStream(scanPath, FileMode.Open, FileAccess.Read))
+                        FileCrypto.EncryptToFile(tmp, fullPath);
+
+                    var originalName = Path.GetFileName(file.FileName);
+                    ctx.Response.Write(Json.Ok(new { fileName = originalName, fileUrl = storedName }));
+                }
+                finally
+                {
+                    try { if (File.Exists(scanPath)) File.Delete(scanPath); } catch { }
+                }
             }
             catch (UnauthorizedAccessException ex)
             {
