@@ -333,9 +333,12 @@
       var cardMenu = role === "master" && !locked ? '<div class="card-menu-wrap">' +
         '<button type="button" class="card-menu-btn" data-action="toggle-agency-menu" data-id="' + a.agencyId + '">' + icon("dots", 16) + "</button>" +
         "</div>" : "";
-      var logo = a.hasLogo ? '<img src="AgencyLogo.ashx?sessionId=' + encodeURIComponent(state.session.sessionId) + '&agencyId=' + a.agencyId + '" alt="" />' : icon("folder", 20);
+      var logoUrl = "AgencyLogo.ashx?sessionId=" + encodeURIComponent(state.session.sessionId) + "&agencyId=" + a.agencyId;
+      var logo = a.hasLogo ? '<img src="' + logoUrl + '" alt="" />' : icon("folder", 20);
+      var logoBg = a.hasLogo && !locked ? '<div class="card-logo-bg" style="background-image:url(\'' + logoUrl + '\')"></div>' : "";
       return '<div class="entity-card' + (locked ? " locked" : "") + '" style="animation-delay:' + (Math.min(i, 5) * 40) + 'ms" ' +
         (locked ? "" : 'data-action="go-agency" data-id="' + a.agencyId + '"') + '>' +
+        logoBg +
         '<div class="icon-chip' + (a.hasLogo && !locked ? " has-logo" : "") + '">' + logo + "</div>" + "<h3>" + esc(a.name) + "</h3>" +
         '<div class="meta">' + esc(a.description || "") + "</div>" +
         (locked ? '<div class="locked-line" style="border-top:1px solid var(--color-rule);margin-top:14px;padding-top:12px">' + icon("lock", 13) + " Not assigned to you</div>" : '<div class="footer">' + statRow(a) + "</div>") +
