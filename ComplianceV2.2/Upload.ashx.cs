@@ -51,6 +51,12 @@ namespace ComplianceV2._2
                             Db.P("@d", scanDetail ?? (object)DBNull.Value));
                         throw new ArgumentException("This file was flagged by antivirus scanning and cannot be uploaded.");
                     }
+                    if (MalwareScanner.ScanUnavailable)
+                    {
+                        Db.Execute("INSERT INTO audit_log (user_id, action, entity_type, entity_id, details) VALUES (@u,@a,@t,@e,@d)",
+                            Db.P("@u", session.Token), Db.P("@a", "UPLOAD_SCAN_UNAVAILABLE"), Db.P("@t", "compliance"), Db.P("@e", complianceId),
+                            Db.P("@d", scanDetail ?? (object)DBNull.Value));
+                    }
 
                     var uploadsDir = ctx.Server.MapPath("~/App_Data/Uploads");
                     if (!Directory.Exists(uploadsDir)) Directory.CreateDirectory(uploadsDir);
