@@ -203,11 +203,9 @@ namespace ComplianceV2._2
             return new { complianceId, nextDueDate = nextDue.ToString("yyyy-MM-dd") };
         }
 
-        // Start date and frequency are permanently fixed at creation - editable fields here are limited
-        // to name/category/description/plant/agency/owner/reviewer. Changing dates or frequency after
-        // the fact would silently invalidate everything the compliance already progressed through via
-        // real fulfilments and their computed due dates, so those inputs are ignored server-side even
-        // if a tampered request tries to send them - the client no longer exposes them either.
+        // Start date stays fixed once a compliance is created. Frequency can be edited - the next due
+        // date is then recomputed from the last real fulfilment (or Start Date if never fulfilled), so
+        // changing frequency never silently discards fulfilment progress already made.
         [WebMethod]
         public object EditCompliance(string sessionId, int complianceId, ComplianceInput input)
         {
@@ -220,22 +218,46 @@ namespace ComplianceV2._2
 
             var old = Db.QuerySingle("SELECT * FROM compliances WHERE compliance_id=@id AND is_active=1", Db.P("@id", complianceId));
             if (old == null) throw new ArgumentException("Compliance not found.");
-            if (input.category == "Return" && (string)old["frequency_unit"] == BizLogic.AsAndWhenUnit)
+            if (input.category == "Return" && input.frequencyUnit == BizLogic.AsAndWhenUnit)
                 throw new ArgumentException("Return compliances can't use the As and When frequency.");
+
+            int oldFreqNum = Convert.ToInt32(old["frequency_number"]);
+            string oldFreqUnit = (string)old["frequency_unit"];
+            var oldDue = (DateTime)old["next_due_date"];
+            bool freqChanged = input.frequencyNumber != oldFreqNum || input.frequencyUnit != oldFreqUnit;
+
+            // Frequency drives the next due date; recompute it from the same anchor the live UI preview
+            // uses - the last real fulfilment if there is one, otherwise Start Date - so changing
+            // frequency never silently discards fulfilment progress already made under the old cadence.
+            var nextDue = oldDue;
+            if (freqChanged)
+            {
+                var lastLog = Db.QuerySingle(
+                    "SELECT action_date FROM compliance_logs WHERE compliance_id=@id ORDER BY action_date DESC, log_id DESC LIMIT 1",
+                    Db.P("@id", complianceId));
+                var anchor = lastLog != null ? (DateTime)lastLog["action_date"] : (DateTime)old["start_date"];
+                nextDue = input.frequencyUnit == BizLogic.AsAndWhenUnit ? anchor : BizLogic.AddInterval(anchor, input.frequencyNumber, input.frequencyUnit);
+            }
+            var fy = BizLogic.FyOf(nextDue);
 
             LogFieldChange(complianceId, s.Token, "category", old["category"], input.category);
             LogFieldChange(complianceId, s.Token, "owner_token", old["owner_token"], input.ownerToken);
             LogFieldChange(complianceId, s.Token, "reviewer_token", old["reviewer_token"], input.reviewerToken);
+            LogFieldChange(complianceId, s.Token, "frequency_number", oldFreqNum, input.frequencyNumber);
+            LogFieldChange(complianceId, s.Token, "frequency_unit", oldFreqUnit, input.frequencyUnit);
 
             Db.Execute(
                 @"UPDATE compliances SET agency_id=@ag, plant_id=@pl, name=@nm, category=@cat, description=@ds,
-                    owner_token=@ow, reviewer_token=@rv WHERE compliance_id=@id",
+                    owner_token=@ow, reviewer_token=@rv, frequency_number=@fn, frequency_unit=@fu,
+                    next_due_date=@nd, financial_year=@fy WHERE compliance_id=@id",
                 Db.P("@ag", input.agencyId), Db.P("@pl", input.plantId),
                 Db.P("@nm", input.name.Trim()), Db.P("@cat", input.category), Db.P("@ds", (object)input.description ?? DBNull.Value),
-                Db.P("@ow", input.ownerToken), Db.P("@rv", (object)input.reviewerToken ?? DBNull.Value), Db.P("@id", complianceId));
+                Db.P("@ow", input.ownerToken), Db.P("@rv", (object)input.reviewerToken ?? DBNull.Value),
+                Db.P("@fn", input.frequencyNumber), Db.P("@fu", input.frequencyUnit),
+                Db.P("@nd", nextDue), Db.P("@fy", fy), Db.P("@id", complianceId));
 
             Audit(s.Token, "EDIT_COMPLIANCE", "compliance", complianceId, null);
-            return new { complianceId, nextDueDate = ((DateTime)old["next_due_date"]).ToString("yyyy-MM-dd") };
+            return new { complianceId, nextDueDate = nextDue.ToString("yyyy-MM-dd") };
         }
 
         private void LogFieldChange(int complianceId, string userToken, string field, object oldVal, object newVal)

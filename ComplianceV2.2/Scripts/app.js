@@ -694,12 +694,10 @@
         : '<input type="date" id="cStart" value="' + esc(d.startDate || isoDate(new Date())) + '" />') +
       "</div>" +
       '<div id="cFreqField"><label>Frequency</label>' +
-      (editing
-        ? '<div class="static-field">' + esc(freqLabel(d.frequencyNumber, d.frequencyUnit)) + '</div><input type="hidden" id="cFreqNum" value="' + (d.frequencyNumber || 1) + '" /><input type="hidden" id="cFreqUnit" value="' + esc(d.frequencyUnit || "month") + '" />'
-        : '<div style="display:flex;gap:8px"><input type="number" min="1" id="cFreqNum" value="' + (d.frequencyNumber || 1) + '" style="width:70px" />' +
-          ssHtml("cFreqUnit", freqUnitOptionsHtml(d.category || "", d.frequencyUnit || "month"), "Search frequency...") + "</div>") +
+      '<div style="display:flex;gap:8px"><input type="number" min="1" id="cFreqNum" value="' + (d.frequencyNumber || 1) + '" style="width:70px" />' +
+      ssHtml("cFreqUnit", freqUnitOptionsHtml(d.category || "", d.frequencyUnit || "month"), "Search frequency...") + "</div>" +
       "</div></div>" +
-      (editing ? '<div class="field-note">Start date and frequency are locked once a compliance is created and can\'t be edited.</div>' : "") +
+      (editing ? '<div class="field-note">Start date is locked once a compliance is created. Changing frequency recalculates the next due date.</div>' : "") +
       '<div class="field"><label>Next due date</label><div class="due-preview" id="cDuePreview">—</div></div>' +
       "</div>" +
       '<div class="modal-foot"><button class="btn btn-ghost" data-action="close-modal">Cancel</button>' +
